@@ -15,7 +15,8 @@ namespace MultiThreadCounterPerformance
                 new OneThreadCounter(),
                 new MultiThreadCounterWithoutLock(),
                 new MultiThreadCounterWithLock(),
-                new InterlockedOneThreadCounter()
+                new InterlockedOneThreadCounter(),
+                new InterlockedMultiThreadCounter()
             };
 
             var value = 100000000;
@@ -123,6 +124,25 @@ namespace MultiThreadCounterPerformance
             {
                 Interlocked.Increment(ref _counter);
             }
+            return this;
+        }
+    }
+
+    class InterlockedMultiThreadCounter : ICounter
+    {
+        private static int _counter;
+
+        public int Get() => _counter;
+
+        public ICounter IncrementCounterTo(int value)
+        {
+            Parallel.For(0, Environment.ProcessorCount, _ =>
+            {
+                for (int i = 0; i < value; i++)
+                {
+                    Interlocked.Increment(ref _counter);
+                }
+            });
             return this;
         }
     }
