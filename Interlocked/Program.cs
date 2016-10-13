@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Diagnostics;
+using System.Text;
 using System.Threading.Tasks;
 
 namespace Interlocked
@@ -11,31 +12,36 @@ namespace Interlocked
             var counters = new ICounter[]
             {
                 new OneThreadCounter(),
-                new MultiThreadCounterWithoutLock()
+                new MultiThreadCounterWithoutLock(),
+                new MultiThreadCounterWithLock()
             };
 
             var value = 100000000;
 
             foreach (var counter in counters)
             {
-                LogTime(() => counter.IncrementCounterTo(value).Get());
+                IncrementAndLogTime(counter, value);
             }
-
 
             Console.ReadLine();
         }
 
-        static void LogTime(Func<int> action)
+        static void IncrementAndLogTime(ICounter counter, int value)
         {
             var stopwatch = new Stopwatch();
 
             stopwatch.Start();
 
-            var result = action();
+            var result = counter.IncrementCounterTo(value).Get();
 
             stopwatch.Stop();
 
-            Console.WriteLine($"\t ===> Execution time: {stopwatch.ElapsedMilliseconds} ms. \t Result: {result}");
+            var message = new StringBuilder();
+            message.AppendLine($"\t {counter.GetType().Name}");
+            message.AppendLine($"\t ===> Execution time: {stopwatch.ElapsedMilliseconds} ms. ");
+            message.AppendLine($"\t Result: {result}");
+            message.AppendLine();
+            Console.WriteLine(message.ToString());
         }
     }
 
@@ -47,7 +53,7 @@ namespace Interlocked
 
     class OneThreadCounter : ICounter
     {
-        private int _counter;
+        private static int _counter;
 
         public int Get() => _counter;
 
@@ -63,7 +69,7 @@ namespace Interlocked
 
     class MultiThreadCounterWithoutLock : ICounter
     {
-        private int _counter;
+        private static int _counter;
 
         public int Get() => _counter;
 
@@ -74,6 +80,29 @@ namespace Interlocked
                 for (int i = 0; i < value; i++)
                 {
                     _counter++;
+                }
+            });
+            return this;
+        }
+    }
+
+    class MultiThreadCounterWithLock : ICounter
+    {
+        private static int _counter;
+        private static readonly object _lock = new object();
+
+        public int Get() => _counter;
+
+        public ICounter IncrementCounterTo(int value)
+        {
+            Parallel.For(0, Environment.ProcessorCount, _ =>
+            {
+                for (int i = 0; i < value; i++)
+                {
+                    lock (_lock)
+                    {
+                        _counter++;
+                    }
                 }
             });
             return this;
