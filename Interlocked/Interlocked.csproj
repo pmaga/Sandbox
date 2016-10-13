@@ -7,8 +7,8 @@
     <ProjectGuid>{E575D352-9D99-4831-9E3B-001635DEEED1}</ProjectGuid>
     <OutputType>Exe</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
-    <RootNamespace>Interlocked</RootNamespace>
-    <AssemblyName>Interlocked</AssemblyName>
+    <RootNamespace>MultiThreadCounterPerformance</RootNamespace>
+    <AssemblyName>MultiThreadCounterPerformance</AssemblyName>
     <TargetFrameworkVersion>v4.5.2</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
     <AutoGenerateBindingRedirects>true</AutoGenerateBindingRedirects>

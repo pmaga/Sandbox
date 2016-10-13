@@ -1,9 +1,10 @@
 ﻿using System;
 using System.Diagnostics;
 using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
 
-namespace Interlocked
+namespace MultiThreadCounterPerformance
 {
     class Program
     {
@@ -13,7 +14,8 @@ namespace Interlocked
             {
                 new OneThreadCounter(),
                 new MultiThreadCounterWithoutLock(),
-                new MultiThreadCounterWithLock()
+                new MultiThreadCounterWithLock(),
+                new InterlockedOneThreadCounter()
             };
 
             var value = 100000000;
@@ -103,6 +105,25 @@ namespace Interlocked
                     {
                         _counter++;
                     }
+                }
+            });
+            return this;
+        }
+    }
+
+    class InterlockedOneThreadCounter : ICounter
+    {
+        private static int _counter;
+
+        public int Get() => _counter;
+
+        public ICounter IncrementCounterTo(int value)
+        {
+            Parallel.For(0, Environment.ProcessorCount, _ =>
+            {
+                for (int i = 0; i < value; i++)
+                {
+                    Interlocked.Increment(ref _counter);
                 }
             });
             return this;
