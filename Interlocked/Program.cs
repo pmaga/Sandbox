@@ -119,13 +119,10 @@ namespace MultiThreadCounterPerformance
 
         public ICounter IncrementCounterTo(int value)
         {
-            Parallel.For(0, Environment.ProcessorCount, _ =>
+            for (int i = 0; i < value; i++)
             {
-                for (int i = 0; i < value; i++)
-                {
-                    Interlocked.Increment(ref _counter);
-                }
-            });
+                Interlocked.Increment(ref _counter);
+            }
             return this;
         }
     }
